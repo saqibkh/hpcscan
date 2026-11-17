@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   validation:
-    name: Validation subset (CUDA 13.0 and simulated H100)
+    name: Validation subset (CUDA 12.6 and simulated H100)
     runs-on: ubuntu-24.04
     timeout-minutes: 120
 
@@ -47,13 +47,15 @@ jobs:
         uses: pantheongpu/setup-pantheonsim@deff5781e8adfd83dec98dd5242dcbc96a564773 # v0.1.10
         with:
           gpu: nvidia/h100
-          cuda-toolkit: "13.0"
+          cuda-toolkit: "12.6"
 
+      # CUDA 12.6 rather than 13.0: the sources read cudaDeviceProp.computeMode,
+      # which CUDA 13 removed.
       # env/setEnvGithubCiCuda.sh builds PTX only (-arch=compute_90) against a
       # shared CUDA runtime, as the simulator needs.
       - name: Build
         run: |
-          export CUDA_HOME=/usr/local/cuda-13.0
+          export CUDA_HOME=/usr/local/cuda-12.6
           ls -l "$CUDA_HOME/include/nvml.h" "$CUDA_HOME"/lib64/stubs/libnvidia-ml.so
           export PATH="$CUDA_HOME/bin:$PATH"
           cd env
@@ -70,7 +72,7 @@ jobs:
       # Each mode runs the same short list of cases on one MPI rank.
       - name: Validation cases
         run: |
-          export CUDA_HOME=/usr/local/cuda-13.0
+          export CUDA_HOME=/usr/local/cuda-12.6
           export PATH="$CUDA_HOME/bin:$PATH"
           export HPCSCAN_MPI_INVOKER=mpirun
           # The executable links NVML but only uses it to read the power draw,
