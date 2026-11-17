@@ -15,7 +15,8 @@ export HPCSCAN_CPP_LIB=
 
 # CUDA_HOME must point to the CUDA toolkit
 export HPCSCAN_CUDA=nvcc
-export HPCSCAN_CUDA_FLAGCOMP='-arch=compute_90 -cudart shared'
+# nvcc also needs the MPI headers (Open MPI: mpic++ --showme:compile)
+export HPCSCAN_CUDA_FLAGCOMP="-arch=compute_90 -cudart shared $(mpic++ --showme:compile)"
 export HPCSCAN_CUDA_LIB="-L${CUDA_HOME}/lib64 -L${CUDA_HOME}/lib64/stubs -lcuda -lcudart -lnvidia-ml"
 
 export HPCSCAN_HIP=
