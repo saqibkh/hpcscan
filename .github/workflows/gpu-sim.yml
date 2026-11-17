@@ -54,6 +54,7 @@ jobs:
       - name: Build
         run: |
           export CUDA_HOME=/usr/local/cuda-13.0
+          ls -l "$CUDA_HOME/include/nvml.h" "$CUDA_HOME"/lib64/stubs/libnvidia-ml.so
           export PATH="$CUDA_HOME/bin:$PATH"
           cd env
           . ./setEnvGithubCiCuda.sh
@@ -64,6 +65,7 @@ jobs:
         run: |
           ls -l bin/hpcscan
           ldd bin/hpcscan | grep -i -E "cuda|nvidia|mpi" || true
+          ldconfig -p | grep -i nvidia-ml || echo "no libnvidia-ml in the loader cache"
 
       # Each mode runs the same short list of cases on one MPI rank.
       - name: Validation cases
@@ -71,6 +73,14 @@ jobs:
           export CUDA_HOME=/usr/local/cuda-13.0
           export PATH="$CUDA_HOME/bin:$PATH"
           export HPCSCAN_MPI_INVOKER=mpirun
+          # The executable links NVML but only uses it to read the power draw,
+          # which is optional. With no driver there is no libnvidia-ml.so.1,
+          # so the toolkit's stub library is made available under that name.
+          if ! ldconfig -p | grep -q libnvidia-ml.so.1; then
+            mkdir -p "$RUNNER_TEMP/nvml"
+            ln -sf "$CUDA_HOME/lib64/stubs/libnvidia-ml.so" "$RUNNER_TEMP/nvml/libnvidia-ml.so.1"
+            export LD_LIBRARY_PATH="$RUNNER_TEMP/nvml${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          fi
           cd script
           status=0
           for mode in CUDA CUDA_Opt CUDA_Ref; do

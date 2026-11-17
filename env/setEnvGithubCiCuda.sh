@@ -10,7 +10,7 @@ export OMP_NUM_THREADS=$HPCSCAN_NTHREADS
 
 export HPCSCAN_CPP=mpic++
 export HPCSCAN_CPP_OPENACC_FLAG=
-export HPCSCAN_CPP_FLAGCOMP='-g -O2 -fopenmp'
+export HPCSCAN_CPP_FLAGCOMP="-g -O2 -fopenmp -I${CUDA_HOME}/include"
 export HPCSCAN_CPP_LIB=
 
 # CUDA_HOME must point to the CUDA toolkit
